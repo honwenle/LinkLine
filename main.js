@@ -10,6 +10,8 @@ var paddingLeft = (WIDTH - GAME_SIZE) / 2
 back.width = WIDTH
 back.height = HEIGHT
 
+var light_arr = Array(col_num)
+
 var board = document.createElement('canvas')
 var ctx_board = board.getContext('2d')
 board.width = GAME_SIZE
@@ -21,9 +23,15 @@ game.width = GAME_SIZE
 game.height = GAME_SIZE
 
 function init() {
+  initData()
   drawBack()
   bindEvent()
-  window.requestAnimationFrame(render)
+  render()
+}
+function initData() {
+  for (var i = 0; i < col_num; i++) {
+    light_arr[i] = Array(col_num)
+  }
 }
 function drawBack() {
   ctx_board.beginPath()
@@ -49,35 +57,39 @@ function drawDot(i, j, color) {
     SIZE / 4, 0, 2*Math.PI)
   ctx_board.fill()
 }
-function drawBlock(xy) {
+function drawBlock(x, y) {
   ctx_game.fillStyle = 'rgba(255, 240, 240, 0.5)'
-  ctx_game.fillRect(xy[0] * (SIZE + 1), xy[1] * (SIZE + 1), SIZE, SIZE)
+  ctx_game.fillRect(x * (SIZE + 1), y * (SIZE + 1), SIZE, SIZE)
 }
-function calcXY(x, y) {
+function calcXY(e) {
+  var x = e.touches[0].pageX, y = e.touches[0].pageY
+  if (x < paddingLeft || x > paddingLeft + GAME_SIZE ||
+    y < paddingTop || y > paddingTop + GAME_SIZE) {
+    return 'no'
+  }
   return [~~((x - paddingLeft) / (SIZE + 1)), ~~((y - paddingTop) / (SIZE + 1))]
 }
-function inGameSize(x, y) {
-  return x > paddingLeft && x < paddingLeft + GAME_SIZE &&
-    y > paddingTop && y < paddingTop + GAME_SIZE
-}
 function bindEvent() {
-  document.addEventListener('touchstart', function (e) {
-    var x = e.touches[0].pageX, y = e.touches[0].pageY
-    inGameSize(x, y) && drawBlock(calcXY(x, y))
-  })
-  document.addEventListener('touchmove', function (e) {
-    ctx_game.clearRect(0, 0, GAME_SIZE, GAME_SIZE)
-    var x = e.touches[0].pageX, y = e.touches[0].pageY
-    inGameSize(x, y) && drawBlock(calcXY(x, y))
-  })
+  document.addEventListener('touchstart', handleTouch)
+  document.addEventListener('touchmove', handleTouch)
   document.addEventListener('touchend', function (e) {
     ctx_game.clearRect(0, 0, GAME_SIZE, GAME_SIZE)
+    initData()
+    render()
   })
+}
+function handleTouch(e) {
+  var [x,y] = calcXY(e)
+  if (x != 'no' && !light_arr[x][y]) {
+    light_arr[x][y] = 'yes'
+    drawBlock(x, y)
+    render()
+  }
 }
 function render() {
   ctx.clearRect(paddingLeft, paddingTop, WIDTH, HEIGHT)
   ctx.drawImage(board, paddingLeft, paddingTop)
   ctx.drawImage(game, paddingLeft, paddingTop)
-  window.requestAnimationFrame(render)
+  // window.requestAnimationFrame(render)
 }
 init()
