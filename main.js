@@ -10,6 +10,8 @@ var paddingLeft = (WIDTH - GAME_SIZE) / 2
 back.width = WIDTH
 back.height = HEIGHT
 
+var can_play = true
+
 var light_arr = Array(col_num)
 
 var board = document.createElement('canvas')
@@ -65,7 +67,8 @@ function calcXY(e) {
   var x = e.touches[0].pageX, y = e.touches[0].pageY
   if (x < paddingLeft || x > paddingLeft + GAME_SIZE ||
     y < paddingTop || y > paddingTop + GAME_SIZE) {
-    return 'no'
+    can_play = false
+    return ['no','no']
   }
   return [~~((x - paddingLeft) / (SIZE + 1)), ~~((y - paddingTop) / (SIZE + 1))]
 }
@@ -76,11 +79,12 @@ function bindEvent() {
     ctx_game.clearRect(0, 0, GAME_SIZE, GAME_SIZE)
     initData()
     render()
+    can_play = true
   })
 }
 function handleTouch(e) {
   var [x,y] = calcXY(e)
-  if (x != 'no' && !light_arr[x][y]) {
+  if (can_play && x != 'no' && !light_arr[x][y]) {
     light_arr[x][y] = 'yes'
     drawBlock(x, y)
     render()
