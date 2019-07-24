@@ -108,7 +108,7 @@ function bindEvent() {
 function handleTouchStart(e) {
   var id = calcID(e)
   if (all[id] !== undefined) {
-    // todo: 另一头起点
+    // TODO: 另一头起点
     deleteSlice(id)
     line_arr[all[id]].push(id)
     current_id = id
@@ -122,9 +122,9 @@ function handleTouch(e) {
   var id = calcID(e)
   if (can_play) {
     if (id !== current_id) {
-      // todo: 不能穿过别的初始点
-      // todo: 斜角问题/连续性问题
-      // todo: 穿过别线清除别线数组
+      // TODO: 不能穿过别的初始点
+      // TODO: 斜角问题/连续性问题
+      // TODO: 穿过别线清除别线数组
       if (all[id] !== undefined) {
         deleteSlice(id)
       }
@@ -134,6 +134,7 @@ function handleTouch(e) {
     }
   }
 }
+// 重启线路时删除后续线路
 function deleteSlice(id) {
   var idx = line_arr[all[id]].indexOf(id)
   if (idx >= -1) {
@@ -150,7 +151,7 @@ function drawGame() {
   for (var i = 0; i < line_num; i++)  {
     line_arr[i].forEach(block => {
       drawBlock(block)
-      // todo: 画连接线
+      // TODO: 画连接线
     })
   }
 }
