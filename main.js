@@ -14,6 +14,7 @@ var can_play = true
 var line_arr = Array(line_num)
 var all = {}
 var current_id = undefined
+var current_line = undefined
 // 整体画布
 var back = document.getElementById('cvs')
 var ctx = back.getContext('2d')
@@ -76,7 +77,6 @@ function drawBlock(id) {
   var [x, y] = id2xy(id)
   ctx_game.fillStyle = 'rgba(255, 240, 240, 0.5)'
   ctx_game.fillRect(x * (SIZE + 1), y * (SIZE + 1), SIZE, SIZE)
-  render()
 }
 // 计算返回行列
 function calcID(e) {
@@ -105,11 +105,12 @@ function bindEvent() {
 // 触摸事件处理
 function handleTouchStart(e) {
   var id = calcID(e)
-  can_play = id != 'no'
   if (all[id] !== undefined) {
-    line_arr[all[id]].length || line_arr[all[id]].push(id)
+    // todo: 另一头起点
+    deleteSlice(id)
+    line_arr[all[id]].push(id)
     current_id = id
-    drawBlock(id)
+    current_line = all[current_id]
   } else {
     can_play = false
   }
@@ -119,20 +120,44 @@ function handleTouch(e) {
   var id = calcID(e)
   if (can_play) {
     if (id !== current_id) {
-      // 不能穿过别的初始点
-      // 穿过本线数组回到穿过点
-      // 穿过别线清除别线数组
-      all[id] = all[current_id]
-      line_arr[all[id]].push(id)
+      // todo: 不能穿过别的初始点
+      // todo: 穿过别线清除别线数组
+      // todo: 斜角问题
+      if (all[id] !== undefined) {
+        deleteSlice(id)
+      }
+      all[id] = current_line
+      line_arr[current_line].push(id)
       current_id = id
-      drawBlock(id)
     }
+  }
+}
+function deleteSlice(id) {
+  var idx = line_arr[all[id]].indexOf(id)
+  if (idx >= -1) {
+    delete_arr = line_arr[all[id]].splice(idx, line_arr[all[id]].length)
+    delete_arr.shift()
+    delete_arr.forEach(id => {
+      delete all[id]
+    })
+  }
+}
+// 画所有格子
+function drawGame() {
+  ctx_game.clearRect(0, 0, GAME_SIZE, GAME_SIZE)
+  for (var i = 0; i < line_num; i++)  {
+    line_arr[i].forEach(block => {
+      drawBlock(block)
+      // todo: 画连接线
+    })
   }
 }
 // 渲染画布
 function render() {
   ctx.clearRect(paddingLeft, paddingTop, WIDTH, HEIGHT)
   ctx.drawImage(board, paddingLeft, paddingTop)
+  drawGame()
   ctx.drawImage(game, paddingLeft, paddingTop)
+  window.requestAnimationFrame(render)
 }
 init()
