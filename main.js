@@ -1,40 +1,52 @@
-var back = document.getElementById('cvs')
-var ctx = back.getContext('2d')
+// 尺寸规格
 var WIDTH = window.innerWidth
 var HEIGHT = window.innerHeight
-var col_num = 5
+var level = 0
+var col_num = levelData[level]['col']
+var level_dots = levelData[level]['dot']
+var line_num = level_dots.length
 var SIZE = ~~((WIDTH - col_num - 1) / col_num)
 var GAME_SIZE = (SIZE + 1) * col_num + 1
 var paddingTop = (HEIGHT - GAME_SIZE) / 2
 var paddingLeft = (WIDTH - GAME_SIZE) / 2
+// 游戏变量
+var can_play = true
+var line_arr = Array(line_num)
+var all = {}
+var current_id = undefined
+// 整体画布
+var back = document.getElementById('cvs')
+var ctx = back.getContext('2d')
 back.width = WIDTH
 back.height = HEIGHT
-
-var can_play = true
-
-var light_arr = Array(col_num)
-
+// 底盘画布
 var board = document.createElement('canvas')
 var ctx_board = board.getContext('2d')
 board.width = GAME_SIZE
 board.height = GAME_SIZE
-
+// 交互画布
 var game = document.createElement('canvas')
 var ctx_game = game.getContext('2d')
 game.width = GAME_SIZE
 game.height = GAME_SIZE
-
+// 初始化
 function init() {
-  initData()
   drawBack()
+  initData()
   bindEvent()
   render()
 }
+// 初始化数据
 function initData() {
-  for (var i = 0; i < col_num; i++) {
-    light_arr[i] = Array(col_num)
+  for (var i = 0; i < line_num; i++) {
+    line_arr[i] = []
+    all[level_dots[i][0]] = i
+    all[level_dots[i][1]] = i
+    drawDot(level_dots[i][0], 'E25E5E')
+    drawDot(level_dots[i][1], 'E25E5E')
   }
 }
+// 画棋盘
 function drawBack() {
   ctx_board.beginPath()
   ctx_board.strokeStyle = '#666'
@@ -47,53 +59,80 @@ function drawBack() {
     ctx_board.lineTo(GAME_SIZE, i)
     ctx_board.stroke()
   }
-  drawDot(2, 1, 'E25E5E')
-  drawDot(4, 3, 'E25E5E')
 }
-function drawDot(i, j, color) {
+// 画点
+function drawDot(id, color) {
+  var [x, y] = id2xy(id)
   ctx_board.beginPath()
   ctx_board.fillStyle = '#' + color
   ctx_board.arc(
-    i * (SIZE + 1) + SIZE / 2,
-    j * (SIZE + 1) + SIZE / 2,
+    x * (SIZE + 1) + SIZE / 2,
+    y * (SIZE + 1) + SIZE / 2,
     SIZE / 4, 0, 2*Math.PI)
   ctx_board.fill()
 }
-function drawBlock(x, y) {
+// 画虚格
+function drawBlock(id) {
+  var [x, y] = id2xy(id)
   ctx_game.fillStyle = 'rgba(255, 240, 240, 0.5)'
   ctx_game.fillRect(x * (SIZE + 1), y * (SIZE + 1), SIZE, SIZE)
+  render()
 }
-function calcXY(e) {
+// 计算返回行列
+function calcID(e) {
   var x = e.touches[0].pageX, y = e.touches[0].pageY
-  if (x < paddingLeft || x > paddingLeft + GAME_SIZE ||
+  if (x < paddingLeft || x >= paddingLeft + GAME_SIZE - 1 ||
     y < paddingTop || y > paddingTop + GAME_SIZE) {
     can_play = false
-    return ['no','no']
+    return 'no'
   }
-  return [~~((x - paddingLeft) / (SIZE + 1)), ~~((y - paddingTop) / (SIZE + 1))]
+  return xy2id(~~((x - paddingLeft) / (SIZE + 1)), ~~((y - paddingTop) / (SIZE + 1)))
 }
+function id2xy(id) {
+  return [id%10, ~~(id/10)]
+}
+function xy2id(x, y) {
+  return x+y*10
+}
+// 事件绑定
 function bindEvent() {
-  document.addEventListener('touchstart', handleTouch)
-  document.addEventListener('touchmove', handleTouch)
+  document.addEventListener('touchstart', handleTouchStart, {passive: false})
+  document.addEventListener('touchmove', handleTouch, {passive: false})
   document.addEventListener('touchend', function (e) {
-    ctx_game.clearRect(0, 0, GAME_SIZE, GAME_SIZE)
-    initData()
-    render()
     can_play = true
   })
 }
-function handleTouch(e) {
-  var [x,y] = calcXY(e)
-  if (can_play && x != 'no' && !light_arr[x][y]) {
-    light_arr[x][y] = 'yes'
-    drawBlock(x, y)
-    render()
+// 触摸事件处理
+function handleTouchStart(e) {
+  var id = calcID(e)
+  can_play = id != 'no'
+  if (all[id] !== undefined) {
+    line_arr[all[id]].length || line_arr[all[id]].push(id)
+    current_id = id
+    drawBlock(id)
+  } else {
+    can_play = false
   }
 }
+function handleTouch(e) {
+  e.preventDefault()
+  var id = calcID(e)
+  if (can_play) {
+    if (id !== current_id) {
+      // 不能穿过别的初始点
+      // 穿过本线数组回到穿过点
+      // 穿过别线清除别线数组
+      all[id] = all[current_id]
+      line_arr[all[id]].push(id)
+      current_id = id
+      drawBlock(id)
+    }
+  }
+}
+// 渲染画布
 function render() {
   ctx.clearRect(paddingLeft, paddingTop, WIDTH, HEIGHT)
   ctx.drawImage(board, paddingLeft, paddingTop)
   ctx.drawImage(game, paddingLeft, paddingTop)
-  // window.requestAnimationFrame(render)
 }
 init()
