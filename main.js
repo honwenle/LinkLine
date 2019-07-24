@@ -9,6 +9,7 @@ var SIZE = ~~((WIDTH - col_num - 1) / col_num)
 var GAME_SIZE = (SIZE + 1) * col_num + 1
 var paddingTop = (HEIGHT - GAME_SIZE) / 2
 var paddingLeft = (WIDTH - GAME_SIZE) / 2
+var color_arr = [[255,255,255],[255,0,0]]
 // 游戏变量
 var can_play = true
 var line_arr = Array(line_num)
@@ -43,8 +44,8 @@ function initData() {
     line_arr[i] = []
     all[level_dots[i][0]] = i
     all[level_dots[i][1]] = i
-    drawDot(level_dots[i][0], 'E25E5E')
-    drawDot(level_dots[i][1], 'E25E5E')
+    drawDot(level_dots[i][0], color_arr[i])
+    drawDot(level_dots[i][1], color_arr[i])
   }
 }
 // 画棋盘
@@ -62,10 +63,10 @@ function drawBack() {
   }
 }
 // 画点
-function drawDot(id, color) {
+function drawDot(id, c) {
   var [x, y] = id2xy(id)
   ctx_board.beginPath()
-  ctx_board.fillStyle = '#' + color
+  ctx_board.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`
   ctx_board.arc(
     x * (SIZE + 1) + SIZE / 2,
     y * (SIZE + 1) + SIZE / 2,
@@ -75,7 +76,8 @@ function drawDot(id, color) {
 // 画虚格
 function drawBlock(id) {
   var [x, y] = id2xy(id)
-  ctx_game.fillStyle = 'rgba(255, 240, 240, 0.5)'
+  var c = color_arr[current_line]
+  ctx_game.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.5)`
   ctx_game.fillRect(x * (SIZE + 1), y * (SIZE + 1), SIZE, SIZE)
 }
 // 计算返回行列
@@ -121,8 +123,8 @@ function handleTouch(e) {
   if (can_play) {
     if (id !== current_id) {
       // todo: 不能穿过别的初始点
+      // todo: 斜角问题/连续性问题
       // todo: 穿过别线清除别线数组
-      // todo: 斜角问题
       if (all[id] !== undefined) {
         deleteSlice(id)
       }
