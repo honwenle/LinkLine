@@ -9,7 +9,6 @@ var SIZE = ~~((WIDTH - col_num - 1) / col_num)
 var GAME_SIZE = (SIZE + 1) * col_num + 1
 var paddingTop = (HEIGHT - GAME_SIZE) / 2
 var paddingLeft = (WIDTH - GAME_SIZE) / 2
-var color_arr = [[255,255,255],[255,0,0]]
 // 游戏变量
 var can_play = true
 var line_arr = Array(line_num)
