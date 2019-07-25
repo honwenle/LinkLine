@@ -14,6 +14,7 @@ var color_arr = [[255,255,255],[255,0,0]]
 var can_play = true
 var line_arr = Array(line_num)
 var all = {}
+var dots = {}
 var current_id = undefined
 var current_line = undefined
 // 整体画布
@@ -42,8 +43,8 @@ function init() {
 function initData() {
   for (var i = 0; i < line_num; i++) {
     line_arr[i] = []
-    all[level_dots[i][0]] = i
-    all[level_dots[i][1]] = i
+    dots[level_dots[i][0]] = i
+    dots[level_dots[i][1]] = i
     drawDot(level_dots[i][0], color_arr[i])
     drawDot(level_dots[i][1], color_arr[i])
   }
@@ -76,7 +77,8 @@ function drawDot(id, c) {
 // 画虚格
 function drawBlock(id) {
   var [x, y] = id2xy(id)
-  var c = color_arr[current_line]
+  console.log(all[id])
+  var c = color_arr[all[id]]
   ctx_game.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.5)`
   ctx_game.fillRect(x * (SIZE + 1), y * (SIZE + 1), SIZE, SIZE)
 }
@@ -102,48 +104,65 @@ function bindEvent() {
   document.addEventListener('touchmove', handleTouch, {passive: false})
   document.addEventListener('touchend', function (e) {
     can_play = true
+    current_id = undefined
+    current_line = undefined
+    // TODO: 游戏是否结束
   })
 }
 // 触摸事件处理
 function handleTouchStart(e) {
   var id = calcID(e)
-  if (all[id] !== undefined) {
-    // TODO: 另一头起点
+  if (dots[id] !== undefined) {
+    current_line = dots[id]
+    deleteLine(dots[id])
+    startLine(id)
+  } else if (all[id] !== undefined) {
+    current_line = all[id]
     deleteSlice(id)
-    line_arr[all[id]].push(id)
-    current_id = id
-    current_line = all[current_id]
+    startLine(id)
   } else {
     can_play = false
   }
+}
+function startLine(id) {
+  current_id = id
+  all[id] = current_line
+  line_arr[current_line].push(id)
 }
 function handleTouch(e) {
   e.preventDefault()
   var id = calcID(e)
   if (can_play) {
     if (id !== current_id) {
-      // TODO: 不能穿过别的初始点
-      // TODO: 斜角问题/连续性问题
-      // TODO: 穿过别线清除别线数组
-      if (all[id] !== undefined) {
+      // TODO: 不能穿过别的初始点/斜角问题/连续性问题
+      if (all[id] === current_line) {
         deleteSlice(id)
+      } else if (dots[id] === current_line) {
+        can_play = false
+        console.log('OK')
+      } else if (dots[id] !== undefined) {
+        return false
+      } else if (all[id] !== undefined) {
+        deleteLine(all[id])
       }
-      all[id] = current_line
-      line_arr[current_line].push(id)
-      current_id = id
+      startLine(id)
     }
   }
 }
 // 重启线路时删除后续线路
 function deleteSlice(id) {
   var idx = line_arr[all[id]].indexOf(id)
-  if (idx >= -1) {
-    delete_arr = line_arr[all[id]].splice(idx, line_arr[all[id]].length)
-    delete_arr.shift()
-    delete_arr.forEach(id => {
-      delete all[id]
-    })
-  }
+  current_line = all[id]
+  delete_arr = line_arr[all[id]].splice(idx, line_arr[all[id]].length)
+  delete_arr.forEach(id => {
+    delete all[id]
+  })
+}
+function deleteLine(line) {
+  line_arr[line].forEach(id => {
+    delete all[id]
+  })
+  line_arr[line] = []
 }
 // 画所有格子
 function drawGame() {
