@@ -77,10 +77,10 @@ function drawDot(id, c) {
 // 画虚格
 function drawBlock(id) {
   var [x, y] = id2xy(id)
-  console.log(all[id])
   var c = color_arr[all[id]]
   ctx_game.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.5)`
   ctx_game.fillRect(x * (SIZE + 1), y * (SIZE + 1), SIZE, SIZE)
+  ctx_game.lineTo(x * (SIZE + 1) + SIZE/2, y * (SIZE + 1) + SIZE/2)
 }
 // 计算返回行列
 function calcID(e) {
@@ -168,10 +168,16 @@ function deleteLine(line) {
 function drawGame() {
   ctx_game.clearRect(0, 0, GAME_SIZE, GAME_SIZE)
   for (var i = 0; i < line_num; i++)  {
+    ctx_game.beginPath()
+    var [x, y] = id2xy(line_arr[i][0])
+    var c = color_arr[i]
+    ctx_game.lineWidth = 6
+    ctx_game.strokeStyle = `rgb(${c[0]},${c[1]},${c[2]})`
+    ctx_game.moveTo(x * (SIZE + 1) + SIZE/2, y * (SIZE + 1) + SIZE/2)
     line_arr[i].forEach(block => {
       drawBlock(block)
-      // TODO: 画连接线
     })
+    ctx_game.stroke()
   }
 }
 // 渲染画布
