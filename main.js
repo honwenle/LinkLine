@@ -179,7 +179,7 @@ function handleTouch(e) {
       if (Math.abs(x-x_) > 1 || Math.abs(y-y_) > 1) {
         return false
       }
-      if (Math.abs(x-x_) == 1 && Math.abs(y-y_) == 1 && dots[id] === undefined) {
+      if (Math.abs(x-x_) == 1 && Math.abs(y-y_) == 1 && (dots[id] === undefined || dots[id] === current_line)) {
         var id0 = xy2id(x,y_), id1 = xy2id(x_,y)
         if (all[id0] === undefined && dots[id0] === undefined) {
           saveID(id0)
