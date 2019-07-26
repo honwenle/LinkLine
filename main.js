@@ -94,14 +94,14 @@ function drawBlock(id) {
   ctx_game.lineTo(x * (SIZE + 1) + SIZE/2, y * (SIZE + 1) + SIZE/2)
 }
 // 计算返回行列
-function calcID(e) {
+function calcXY(e) {
   var x = e.touches[0].pageX, y = e.touches[0].pageY
   if (x < paddingLeft || x >= paddingLeft + GAME_SIZE - 1 ||
     y < paddingTop || y > paddingTop + GAME_SIZE) {
     can_play = false
     return 'no'
   }
-  return xy2id(~~((x - paddingLeft) / (SIZE + 1)), ~~((y - paddingTop) / (SIZE + 1)))
+  return [~~((x - paddingLeft) / (SIZE + 1)), ~~((y - paddingTop) / (SIZE + 1))]
 }
 function id2xy(id) {
   return [id%10, ~~(id/10)]
@@ -140,7 +140,8 @@ function bindEvent() {
 }
 // 触摸事件处理
 function handleTouchStart(e) {
-  var id = calcID(e)
+  var [x, y] = calcXY(e)
+  var id = xy2id(x, y)
   if (dots[id] !== undefined) {
     current_line = dots[id]
     deleteLine(dots[id])
@@ -155,25 +156,43 @@ function handleTouchStart(e) {
 }
 function startLine(id) {
   current_id = id
+  saveID(id)
+}
+function saveID(id) {
   all[id] = current_line
   line_arr[current_line].push(id)
 }
 function handleTouch(e) {
   e.preventDefault()
-  var id = calcID(e)
+  var [x, y] = calcXY(e)
+  var id = xy2id(x, y)
   if (can_play) {
     fingerX = e.touches[0].pageX
     fingerY = e.touches[0].pageY
     if (id !== current_id) {
-      // TODO: 不能穿过别的初始点/斜角问题/连续性问题
-      if (all[id] === current_line) {
+      var [x_, y_] = id2xy(current_id)
+      // 斜角情况
+      if (Math.abs(x-x_) > 1 || Math.abs(y-y_) > 1) {
+        return false
+      }
+      if (Math.abs(x-x_) == 1 && Math.abs(y-y_) == 1) {
+        var id0 = xy2id(x,y_), id1 = xy2id(x_,y)
+        if (all[id0] === undefined && dots[id0] === undefined) {
+          saveID(id0)
+        } else if (all[id1] === undefined && dots[id1] === undefined) {
+          saveID(id1)
+        } else {
+          return false
+        }
+      }
+      if (all[id] === current_line) { // 自家线路
         deleteSlice(id)
-      } else if (dots[id] === current_line) {
+      } else if (dots[id] === current_line) { // 自家终点
         can_play = false
         console.log('OK')
-      } else if (dots[id] !== undefined) {
+      } else if (dots[id] !== undefined) { // 别家端点
         return false
-      } else if (all[id] !== undefined) {
+      } else if (all[id] !== undefined) { // 别家线路
         deleteLine(all[id])
       }
       startLine(id)
