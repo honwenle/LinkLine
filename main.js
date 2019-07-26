@@ -16,6 +16,7 @@ var all = {}
 var dots = {}
 var current_id = undefined
 var current_line = undefined
+var fingerX, fingerY
 // 整体画布
 var back = document.getElementById('cvs')
 var ctx = back.getContext('2d')
@@ -73,6 +74,17 @@ function drawDot(id, c) {
     SIZE / 4, 0, 2*Math.PI)
   ctx_board.fill()
 }
+// 画指尖
+function drawFinger() {
+  if (!fingerX || !fingerY) {
+    return false
+  }
+  ctx.beginPath()
+  var c = color_arr[current_line]
+  ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.3)`
+  ctx.arc(fingerX, fingerY, SIZE*.75, 0, 2*Math.PI)
+  ctx.fill()
+}
 // 画虚格
 function drawBlock(id) {
   var [x, y] = id2xy(id)
@@ -102,6 +114,8 @@ function bindEvent() {
   document.addEventListener('touchstart', handleTouchStart, {passive: false})
   document.addEventListener('touchmove', handleTouch, {passive: false})
   document.addEventListener('touchend', function (e) {
+    fingerX = undefined
+    fingerY = undefined
     can_play = true
     current_id = undefined
     current_line = undefined
@@ -148,6 +162,8 @@ function handleTouch(e) {
   e.preventDefault()
   var id = calcID(e)
   if (can_play) {
+    fingerX = e.touches[0].pageX
+    fingerY = e.touches[0].pageY
     if (id !== current_id) {
       // TODO: 不能穿过别的初始点/斜角问题/连续性问题
       if (all[id] === current_line) {
@@ -197,10 +213,11 @@ function drawGame() {
 }
 // 渲染画布
 function render() {
-  ctx.clearRect(paddingLeft, paddingTop, WIDTH, HEIGHT)
+  ctx.clearRect(0, 0, WIDTH, HEIGHT)
   ctx.drawImage(board, paddingLeft, paddingTop)
   drawGame()
   ctx.drawImage(game, paddingLeft, paddingTop)
+  drawFinger()
   window.requestAnimationFrame(render)
 }
 init()
