@@ -105,7 +105,23 @@ function bindEvent() {
     can_play = true
     current_id = undefined
     current_line = undefined
-    // TODO: 游戏是否结束
+    if (levelData[level]['full']) {
+      for (var i = 0; i < col_num; i++) {
+        for (var j = 0; j < col_num; j++) {
+          if (all[xy2id(i, j)] === undefined) {
+            return false
+          }
+        }
+      }
+    } else {
+      for (var id in dots) {
+        if (all[id] === undefined) {
+          return false
+        }
+      }
+    }
+    alert('通过')
+    // TODO: 重置数据
   })
 }
 // 触摸事件处理
