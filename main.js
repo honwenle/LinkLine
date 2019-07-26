@@ -137,9 +137,13 @@ function bindEvent() {
         }
       }
     }
-    alert('通过')
     level ++
-    init()
+    if (level >= levelData.length) {
+      alert('通关了！')
+    } else {
+      alert('通过')
+      init()
+    }
   })
 }
 // 触摸事件处理
@@ -246,3 +250,4 @@ function render() {
 init()
 bindEvent()
 render()
+alert('亮色网格线需填满通关')
