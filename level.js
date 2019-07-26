@@ -9,5 +9,13 @@ var levelData = [
     "dot": [[11, 43], [0, 44]],
     "col": 8,
     "full": false
+  }, {
+    "dot": [[11, 43], [0, 44]],
+    "col": 5,
+    "full": true
+  }, {
+    "dot": [[11, 43], [0, 44]],
+    "col": 8,
+    "full": true
   }
 ]

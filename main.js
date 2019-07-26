@@ -2,45 +2,48 @@
 var WIDTH = window.innerWidth
 var HEIGHT = window.innerHeight
 var level = 0
-var col_num = levelData[level]['col']
-var level_dots = levelData[level]['dot']
-var line_num = level_dots.length
-var SIZE = ~~((WIDTH - col_num - 1) / col_num)
-var GAME_SIZE = (SIZE + 1) * col_num + 1
-var paddingTop = (HEIGHT - GAME_SIZE) / 2
-var paddingLeft = (WIDTH - GAME_SIZE) / 2
+var col_num, level_dots, line_num, SIZE, GAME_SIZE, paddingTop, paddingLeft
 // 游戏变量
+var line_arr, all, dots
 var can_play = true
-var line_arr = Array(line_num)
-var all = {}
-var dots = {}
 var current_id = undefined
 var current_line = undefined
 var fingerX, fingerY
 // 整体画布
 var back = document.getElementById('cvs')
 var ctx = back.getContext('2d')
-back.width = WIDTH
-back.height = HEIGHT
 // 底盘画布
 var board = document.createElement('canvas')
 var ctx_board = board.getContext('2d')
-board.width = GAME_SIZE
-board.height = GAME_SIZE
 // 交互画布
 var game = document.createElement('canvas')
 var ctx_game = game.getContext('2d')
-game.width = GAME_SIZE
-game.height = GAME_SIZE
 // 初始化
 function init() {
+  initSize()
   drawBack()
   initData()
-  bindEvent()
-  render()
 }
 // 初始化数据
+function initSize() {
+  col_num = levelData[level]['col']
+  level_dots = levelData[level]['dot']
+  line_num = level_dots.length
+  SIZE = ~~((WIDTH - col_num - 1) / col_num)
+  GAME_SIZE = (SIZE + 1) * col_num + 1
+  paddingTop = (HEIGHT - GAME_SIZE) / 2
+  paddingLeft = (WIDTH - GAME_SIZE) / 2
+  back.width = WIDTH
+  back.height = HEIGHT
+  board.width = GAME_SIZE
+  board.height = GAME_SIZE
+  game.width = GAME_SIZE
+  game.height = GAME_SIZE
+}
 function initData() {
+  line_arr = Array(line_num)
+  all = {}
+  dots = {}
   for (var i = 0; i < line_num; i++) {
     line_arr[i] = []
     dots[level_dots[i][0]] = i
@@ -52,7 +55,7 @@ function initData() {
 // 画棋盘
 function drawBack() {
   ctx_board.beginPath()
-  ctx_board.strokeStyle = '#666'
+  ctx_board.strokeStyle = levelData[level]['full'] ? '#D0E9FF' : '#666'
   ctx_board.lineWidth = 1
   for (var i = 0; i <= GAME_SIZE; i+=(SIZE + 1)) {
     ctx_board.moveTo(i, 0)
@@ -135,7 +138,8 @@ function bindEvent() {
       }
     }
     alert('通过')
-    // TODO: 重置数据
+    level ++
+    init()
   })
 }
 // 触摸事件处理
@@ -240,3 +244,5 @@ function render() {
   window.requestAnimationFrame(render)
 }
 init()
+bindEvent()
+render()
